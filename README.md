@@ -1,2 +1,2 @@
-# barcode-reader
-An angular barcode reader module
+# barcode
+An angular directive for lindell's JsBarcode
