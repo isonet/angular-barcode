@@ -1,5 +1,5 @@
 {
-  "name": "barcode",
+  "name": "angular-barcode",
   "version": "1.0.1",
   "description": "An angular directive for lindell's JsBarcode",
   "main": "barcode.js",
