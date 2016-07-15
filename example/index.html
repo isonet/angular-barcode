@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Barcode Reader Example</title>
+    <script src="../jspm_packages/system.js"></script>
+    <script src="../config.js"></script>
+    <script>
+        System.import('example/index.js');
+
+    </script>
+</head>
+<body ng-app="barcodeExample" ng-controller="MainController">
+<barcode text="test" type="svg"></barcode>
+<barcode text="test" type="img"></barcode>
+<barcode text="test" type="canvas"></barcode>
+</body>
+</html>

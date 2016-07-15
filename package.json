@@ -1,0 +1,45 @@
+{
+  "name": "barcode",
+  "version": "1.0.1",
+  "description": "An angular directive for lindell's JsBarcode",
+  "main": "barcode.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isonet/barcode.git"
+  },
+  "keywords": [
+    "barcode",
+    "angular",
+    "module",
+    "directive",
+    "generator",
+    "lindell",
+    "JsBarcode"
+  ],
+  "author": "Paul Biester",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/isonet/barcode/issues"
+  },
+  "homepage": "https://github.com/isonet/barcode#readme",
+  "dependencies": {
+    "angular": "^1.5.7"
+  },
+  "devDependencies": {
+    "jspm": "^0.16.39"
+  },
+  "jspm": {
+    "dependencies": {
+      "angular": "npm:angular@^1.5.7",
+      "jsbarcode": "npm:jsbarcode@^3.3.14"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
+      "core-js": "npm:core-js@^1.1.4"
+    }
+  }
+}
