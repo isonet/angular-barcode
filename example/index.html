@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Barcode Reader Example</title>
-    <script src="../jspm_packages/system.js"></script>
-    <script src="../config.js"></script>
-    <script>
-        System.import('example/index.js');
+    <script src="../node_modules/angular/angular.js"></script>
+    <script src="../dist/barcode.min.js"></script>
 
+    <script>
+        angular.module('barcodeExample', ['barcode']);
     </script>
 </head>
-<body ng-app="barcodeExample" ng-controller="MainController">
+<body ng-app="barcodeExample">
 <barcode text="test" type="svg"></barcode>
 <barcode text="test" type="img"></barcode>
 <barcode text="test" type="canvas"></barcode>
