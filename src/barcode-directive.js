@@ -53,7 +53,6 @@ export default class BarcodeDirective {
     }
 
     link(scope, element, attributes) {
-        console.log(element);
         JsBarcode(element[0], scope.text, {
             format: scope.format || 'CODE128',
             lineColor: scope.lineColor || '#000000',
