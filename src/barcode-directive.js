@@ -5,8 +5,8 @@ import JsBarcode from 'jsbarcode';
 export default class BarcodeDirective {
 
     static resolveTemplate(element, attrs) {
-        let cssClass = attrs.class || 'barcode';
-        switch(attrs.type) {
+        let cssClass = attrs.bcClass || 'barcode';
+        switch(attrs.bcType) {
             case 'svg':
                 return `<svg class="${cssClass}"></svg>`;
                 break;
@@ -21,58 +21,86 @@ export default class BarcodeDirective {
 
     constructor() {
 
+        this.defaults = {
+            format: 'CODE128',
+            lineColor: '#000000',
+            width: 2,
+            height: 100,
+            displayValue: true,
+            fontOptions: '',
+            font: 'monospace',
+            textAlign: 'center',
+            textPosition: 'bottom',
+            textMargin: 2,
+            fontSize: 20,
+            background: '#ffffff',
+            margin: 10,
+            marginTop: undefined,
+            marginBottom: undefined,
+            marginLeft: undefined,
+            marginRight: undefined,
+            valid: function(valid){}
+        };
+
 
         // Directive config
         this.replace = true;
         this.restrict = 'E';
         this.scope = {
-            type: '@',
-            text: '@',
-            class: '@?',
+            bcType: '@',
+            bcText: '@',
+            bcClass: '@?',
             // https://github.com/lindell/JsBarcode/wiki/Options#format
-            format: '@?',
-            lineColor: '@?',
-            width: '@?',
-            height: '@?',
-            displayValue: '@?',
-            fontOptions: '@?',
-            font: '@?',
-            textAlign: '@?',
-            textPosition: '@?',
-            textMargin: '@?',
-            fontSize: '@?',
-            background: '@?',
-            margin: '@?',
-            marginTop: '@?',
-            marginBottom: '@?',
-            marginLeft: '@?',
-            marginRight: '@?',
-            valid: '=?'
+            bcFormat: '@?',
+            bcLineColor: '@?',
+            bcWidth: '@?',
+            bcHeight: '@?',
+            bcDisplayValue: '@?',
+            bcFontOptions: '@?',
+            bcFont: '@?',
+            bcTextAlign: '@?',
+            bcTextPosition: '@?',
+            bcTextMargin: '@?',
+            bcFontSize: '@?',
+            bcBackground: '@?',
+            bcMargin: '@?',
+            bcMarginTop: '@?',
+            bcMarginBottom: '@?',
+            bcMarginLeft: '@?',
+            bcMarginRight: '@?',
+            bcValid: '=?'
         };
         this.template = BarcodeDirective.resolveTemplate;
     }
 
     link(scope, element, attributes) {
-        JsBarcode(element[0], scope.text, {
-            format: scope.format || 'CODE128',
-            lineColor: scope.lineColor || '#000000',
-            width: parseInt(scope.width, 10) || 2,
-            height: parseInt(scope.height, 10) || 100,
-            displayValue: (scope.displayValue === 'true') || true,
-            fontOptions: scope.fontOptions || '',
-            font: scope.font || 'monospace',
-            textAlign: scope.textAlign || 'center',
-            textPosition: scope.textPosition || 'bottom',
-            textMargin: parseInt(scope.textMargin, 10) || 2,
-            fontSize: parseInt(scope.fontSize, 10) || 20,
-            background: scope.background || '#ffffff',
-            margin: parseInt(scope.margin, 10) || 10,
-            marginTop: parseInt(scope.marginTop, 10) || undefined,
-            marginBottom: parseInt(scope.marginBottom, 10) || undefined,
-            marginLeft: parseInt(scope.marginLeft, 10) || undefined,
-            marginRight: parseInt(scope.marginRight, 10) || undefined,
-            valid: scope.valid || function(valid){}
-        })
+
+        scope.$watch(() => {
+            if(scope.bcText !== undefined && scope.bcText.length > 0) {
+                JsBarcode(element[0], scope.bcText, {
+                    format: scope.bcFormat || this.defaults.format,
+                    lineColor: scope.bcLineColor || this.defaults.lineColor,
+                    width: parseInt(scope.bcWidth, 10) || this.defaults.width,
+                    height: parseInt(scope.bcHeight, 10) || this.defaults.height,
+                    displayValue: (scope.bcDisplayValue === 'true') || this.defaults.displayValue,
+                    fontOptions: scope.bcFontOptions || this.defaults.fontOptions,
+                    font: scope.bcFont || this.defaults.font,
+                    textAlign: scope.bcTextAlign || this.defaults.textAlign,
+                    textPosition: scope.bcTextPosition || this.defaults.textPosition,
+                    textMargin: parseInt(scope.bcTextMargin, 10) || this.defaults.textMargin,
+                    fontSize: parseInt(scope.bcFontSize, 10) || this.defaults.fontSize,
+                    background: scope.bcBackground || this.defaults.background,
+                    margin: parseInt(scope.bcMargin, 10) || this.defaults.margin,
+                    marginTop: parseInt(scope.bcMarginTop, 10) || this.defaults.marginTop,
+                    marginBottom: parseInt(scope.bcMarginBottom, 10) || this.defaults.marginBottom,
+                    marginLeft: parseInt(scope.bcMarginLeft, 10) || this.defaults.marginLeft,
+                    marginRight: parseInt(scope.bcMarginRight, 10) || this.defaults.marginRight,
+                    valid: scope.bcValid || this.defaults.valid
+                })
+            }
+
+        });
+
     }
 
     static directiveFactory(){
