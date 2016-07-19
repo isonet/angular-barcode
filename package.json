@@ -1,6 +1,6 @@
 {
   "name": "angular-barcode",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "An angular directive for lindell's JsBarcode",
   "main": "dist/barcode.js",
   "scripts": {
