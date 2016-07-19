@@ -1,8 +1,8 @@
 'use strict';
 
-import JsBarcode from 'jsbarcode';
+let JsBarcode = require('jsbarcode');
 
-export default class BarcodeDirective {
+class BarcodeDirective {
 
     static resolveTemplate(element, attrs) {
         let cssClass = attrs.bcClass || 'barcode';
@@ -109,3 +109,5 @@ export default class BarcodeDirective {
 }
 
 BarcodeDirective.directiveFactory.$inject = [];
+
+module.exports = BarcodeDirective;
