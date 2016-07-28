@@ -5,10 +5,6 @@ var _barcodes = require('./barcodes/');
 
 var _barcodes2 = _interopRequireDefault(_barcodes);
 
-var _renderers = require('./renderers/');
-
-var _renderers2 = _interopRequireDefault(_renderers);
-
 var _merge = require('./help/merge.js');
 
 var _merge2 = _interopRequireDefault(_merge);
@@ -21,25 +17,29 @@ var _fixOptions = require('./help/fixOptions.js');
 
 var _fixOptions2 = _interopRequireDefault(_fixOptions);
 
-var _getOptionsFromElement = require('./help/getOptionsFromElement.js');
+var _getRenderProperties = require('./help/getRenderProperties.js');
 
-var _getOptionsFromElement2 = _interopRequireDefault(_getOptionsFromElement);
+var _getRenderProperties2 = _interopRequireDefault(_getRenderProperties);
+
+var _defaults = require('./defaults/defaults.js');
+
+var _defaults2 = _interopRequireDefault(_defaults);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // The protype of the object returned from the JsBarcode() call
-
-
-// Help functions
 // Import all the barcodes
 var API = function API() {};
 
 // The first call of the library API
-// Will return an object with all barcodes calls and the information needed
-// when the rendering function is called and options the barcodes might need
+// Will return an object with all barcodes calls and the data that is used
+// by the renderers
 
 
-// Import the renderers
+// Default values
+
+
+// Help functions
 var JsBarcode = function JsBarcode(element, text, options) {
 	var api = new API();
 
@@ -48,11 +48,11 @@ var JsBarcode = function JsBarcode(element, text, options) {
 	}
 
 	// Variables that will be pased through the API calls
-	api._renderProperties = getRenderProperies(element);
+	api._renderProperties = (0, _getRenderProperties2.default)(element);
 	api._encodings = [];
-	api._options = defaults;
+	api._options = _defaults2.default;
 
-	// If text is set, use simple syntax
+	// If text is set, use the simple syntax (render the barcode directly)
 	if (typeof text !== "undefined") {
 		options = options || {};
 
@@ -91,6 +91,7 @@ function registerBarcode(barcodes, name) {
 	};
 }
 
+// encode() handles the Encoder call and builds the binary string to be rendered
 function encode(text, Encoder, options) {
 	// Ensure that text is a string
 	text = "" + text;
@@ -100,13 +101,14 @@ function encode(text, Encoder, options) {
 	// If the input is not valid for the encoder, throw error.
 	// If the valid callback option is set, call it instead of throwing error
 	if (!encoder.valid()) {
-		if (options.valid === defaults.valid) {
-			throw new Error('"' + text + '" is not a valid input for ' + name);
+		if (options.valid === _defaults2.default.valid) {
+			throw new Error('"' + text + '" is not a valid input.');
 		} else {
 			options.valid(false);
 		}
 	}
 
+	// Make a request for the binary data (and other infromation) that should be rendered
 	var encoded = encoder.encode();
 
 	// Encodings can be nestled like [[1-1, 1-2], 2, [3-1, 3-2]
@@ -145,8 +147,9 @@ API.prototype.blank = function (size) {
 	return this;
 };
 
+// Initialize JsBarcode on all HTML elements defined.
 API.prototype.init = function () {
-	// this._renderProperties can be
+	// Make sure renderProperies is an array
 	if (!Array.isArray(this._renderProperties)) {
 		this._renderProperties = [this._renderProperties];
 	}
@@ -187,8 +190,6 @@ API.prototype.render = function () {
 
 // Prepares the encodings and calls the renderer
 function render(renderProperties, encodings, options) {
-	var renderer = _renderers2.default[renderProperties.renderer];
-
 	encodings = (0, _linearizeEncodings2.default)(encodings);
 
 	for (var i = 0; i < encodings.length; i++) {
@@ -198,7 +199,9 @@ function render(renderProperties, encodings, options) {
 
 	(0, _fixOptions2.default)(options);
 
-	renderer(renderProperties.element, encodings, options);
+	var Renderer = renderProperties.renderer;
+	var renderer = new Renderer(renderProperties.element, encodings, options);
+	renderer.render();
 
 	if (renderProperties.afterRender) {
 		renderProperties.afterRender();
@@ -211,6 +214,7 @@ if (typeof window !== "undefined") {
 }
 
 // Export to jQuery
+/*global jQuery */
 if (typeof jQuery !== 'undefined') {
 	jQuery.fn.JsBarcode = function (content, options) {
 		var elementArray = [];
@@ -223,99 +227,7 @@ if (typeof jQuery !== 'undefined') {
 
 // Export to commonJS
 module.exports = JsBarcode;
-
-// Takes an element and returns an object with information about how
-// it should be rendered
-// This could also return an array with these objects
-// {
-//   element: The element that the renderer should draw on
-//   renderer: The name of the renderer
-//   afterRender (optional): If something has to done after the renderer
-//     completed, calls afterRender (function)
-//   options (optional): Options that can be defined in the element
-// }
-function getRenderProperies(element) {
-	// If the element is a string, query select call again
-	if (typeof element === "string") {
-		var selector = document.querySelectorAll(element);
-		if (selector.length === 0) {
-			throw new Error("No element found");
-		} else {
-			var returnArray = [];
-			for (var i = 0; i < selector.length; i++) {
-				returnArray.push(getRenderProperies(selector[i]));
-			}
-			return returnArray;
-		}
-	}
-	// If element is array. Recursivly call with every object in the array
-	else if (Array.isArray(element)) {
-			var returnArray = [];
-			for (var i = 0; i < element.length; i++) {
-				returnArray.push(getRenderProperies(element[i]));
-			}
-			return returnArray;
-		}
-		// If element, render on canvas and set the uri as src
-		else if (typeof HTMLCanvasElement !== 'undefined' && element instanceof HTMLImageElement) {
-				var canvas = document.createElement('canvas');
-				return {
-					element: canvas,
-					options: (0, _getOptionsFromElement2.default)(element, defaults),
-					renderer: "canvas",
-					afterRender: function afterRender() {
-						element.setAttribute("src", canvas.toDataURL());
-					}
-				};
-			}
-			// If SVG
-			else if (typeof SVGElement !== 'undefined' && element instanceof SVGElement) {
-					return {
-						element: element,
-						options: (0, _getOptionsFromElement2.default)(element, defaults),
-						renderer: "svg"
-					};
-				}
-				// If canvas (in browser)
-				else if (typeof HTMLCanvasElement !== 'undefined' && element instanceof HTMLCanvasElement) {
-						return {
-							element: element,
-							options: (0, _getOptionsFromElement2.default)(element, defaults),
-							renderer: "canvas"
-						};
-					}
-					// If canvas (in node)
-					else if (element.getContext) {
-							return {
-								element: element,
-								renderer: "canvas"
-							};
-						} else {
-							throw new Error("Not supported type to render on.");
-						}
-}
-
-var defaults = {
-	width: 2,
-	height: 100,
-	format: "auto",
-	displayValue: true,
-	fontOptions: "",
-	font: "monospace",
-	textAlign: "center",
-	textPosition: "bottom",
-	textMargin: 2,
-	fontSize: 20,
-	background: "#ffffff",
-	lineColor: "#000000",
-	margin: 10,
-	marginTop: undefined,
-	marginBottom: undefined,
-	marginLeft: undefined,
-	marginRight: undefined,
-	valid: function valid(_valid) {}
-};
-},{"./barcodes/":26,"./help/fixOptions.js":28,"./help/getOptionsFromElement.js":29,"./help/linearizeEncodings.js":30,"./help/merge.js":31,"./renderers/":34}],2:[function(require,module,exports){
+},{"./barcodes/":26,"./defaults/defaults.js":28,"./help/fixOptions.js":29,"./help/getRenderProperties.js":31,"./help/linearizeEncodings.js":32,"./help/merge.js":33}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -671,9 +583,6 @@ var CODE128AUTO = function (_CODE) {
 		_classCallCheck(this, CODE128AUTO);
 
 		// ASCII value ranges 0-127, 200-211
-
-		var _this = _possibleConstructorReturn(this, _CODE.call(this, string));
-
 		if (string.search(/^[\x00-\x7F\xC8-\xD3]+$/) !== -1) {
 			var _this = _possibleConstructorReturn(this, _CODE.call(this, autoSelectModes(string)));
 		} else {
@@ -856,8 +765,8 @@ var CODE39 = function () {
 		// Calculate mod43 checksum if enabled
 		if (this.mod43Enabled) {
 			var checksum = 0;
-			for (var i = 0; i < this.string.length; i++) {
-				checksum += this.characterValue(this.string[i]);
+			for (var _i = 0; _i < this.string.length; _i++) {
+				checksum += this.characterValue(this.string[_i]);
 			}
 
 			checksum = checksum % 43;
@@ -1633,7 +1542,7 @@ var ITF14 = function () {
 			result += parseInt(this.string[i]) * (3 - i % 2 * 2);
 		}
 
-		return 10 - result % 10;
+		return Math.ceil(result / 10) * 10 - result;
 	};
 
 	return ITF14;
@@ -1918,7 +1827,7 @@ exports.MSI1110 = _MSI10.default;
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 
 var _CODE = require('./CODE39/');
@@ -1938,20 +1847,20 @@ var _pharmacode = require('./pharmacode/');
 var _GenericBarcode = require('./GenericBarcode/');
 
 exports.default = {
-  CODE39: _CODE.CODE39,
-  CODE128: _CODE2.CODE128, CODE128A: _CODE2.CODE128A, CODE128B: _CODE2.CODE128B, CODE128C: _CODE2.CODE128C,
-  EAN13: _EAN_UPC.EAN13, EAN8: _EAN_UPC.EAN8, EAN5: _EAN_UPC.EAN5, EAN2: _EAN_UPC.EAN2, UPC: _EAN_UPC.UPC,
-  ITF14: _ITF.ITF14,
-  ITF: _ITF2.ITF,
-  MSI: _MSI.MSI, MSI10: _MSI.MSI10, MSI11: _MSI.MSI11, MSI1010: _MSI.MSI1010, MSI1110: _MSI.MSI1110,
-  pharmacode: _pharmacode.pharmacode,
-  GenericBarcode: _GenericBarcode.GenericBarcode
+	CODE39: _CODE.CODE39,
+	CODE128: _CODE2.CODE128, CODE128A: _CODE2.CODE128A, CODE128B: _CODE2.CODE128B, CODE128C: _CODE2.CODE128C,
+	EAN13: _EAN_UPC.EAN13, EAN8: _EAN_UPC.EAN8, EAN5: _EAN_UPC.EAN5, EAN2: _EAN_UPC.EAN2, UPC: _EAN_UPC.UPC,
+	ITF14: _ITF.ITF14,
+	ITF: _ITF2.ITF,
+	MSI: _MSI.MSI, MSI10: _MSI.MSI10, MSI11: _MSI.MSI11, MSI1010: _MSI.MSI1010, MSI1110: _MSI.MSI1110,
+	pharmacode: _pharmacode.pharmacode,
+	GenericBarcode: _GenericBarcode.GenericBarcode
 };
 },{"./CODE128/":7,"./CODE39/":8,"./EAN_UPC/":15,"./GenericBarcode/":16,"./ITF/":17,"./ITF14/":18,"./MSI/":25,"./pharmacode/":27}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1960,48 +1869,76 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // http://www.gomaro.ch/ftproot/Laetus_PHARMA-CODE.pdf
 
 var pharmacode = function () {
-  function pharmacode(string) {
-    _classCallCheck(this, pharmacode);
+	function pharmacode(string) {
+		_classCallCheck(this, pharmacode);
 
-    this.number = parseInt(string, 10);
-  }
+		this.number = parseInt(string, 10);
+	}
 
-  pharmacode.prototype.encode = function encode() {
-    var z = this.number;
-    var result = "";
+	pharmacode.prototype.encode = function encode() {
+		var z = this.number;
+		var result = "";
 
-    // http://i.imgur.com/RMm4UDJ.png
-    // (source: http://www.gomaro.ch/ftproot/Laetus_PHARMA-CODE.pdf, page: 34)
-    while (!isNaN(z) && z != 0) {
-      if (z % 2 === 0) {
-        // Even
-        result = "11100" + result;
-        z = (z - 2) / 2;
-      } else {
-        // Odd
-        result = "100" + result;
-        z = (z - 1) / 2;
-      }
-    }
+		// http://i.imgur.com/RMm4UDJ.png
+		// (source: http://www.gomaro.ch/ftproot/Laetus_PHARMA-CODE.pdf, page: 34)
+		while (!isNaN(z) && z != 0) {
+			if (z % 2 === 0) {
+				// Even
+				result = "11100" + result;
+				z = (z - 2) / 2;
+			} else {
+				// Odd
+				result = "100" + result;
+				z = (z - 1) / 2;
+			}
+		}
 
-    // Remove the two last zeroes
-    result = result.slice(0, -2);
+		// Remove the two last zeroes
+		result = result.slice(0, -2);
 
-    return {
-      data: result,
-      text: this.number + ""
-    };
-  };
+		return {
+			data: result,
+			text: this.number + ""
+		};
+	};
 
-  pharmacode.prototype.valid = function valid() {
-    return this.number >= 3 && this.number <= 131070;
-  };
+	pharmacode.prototype.valid = function valid() {
+		return this.number >= 3 && this.number <= 131070;
+	};
 
-  return pharmacode;
+	return pharmacode;
 }();
 
 exports.pharmacode = pharmacode;
 },{}],28:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+var defaults = {
+	width: 2,
+	height: 100,
+	format: "auto",
+	displayValue: true,
+	fontOptions: "",
+	font: "monospace",
+	textAlign: "center",
+	textPosition: "bottom",
+	textMargin: 2,
+	fontSize: 20,
+	background: "#ffffff",
+	lineColor: "#000000",
+	margin: 10,
+	marginTop: undefined,
+	marginBottom: undefined,
+	marginLeft: undefined,
+	marginRight: undefined,
+	valid: function valid() {}
+};
+
+exports.default = defaults;
+},{}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2019,47 +1956,153 @@ function fixOptions(options) {
 
 	return options;
 }
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 
 var _optionsFromStrings = require("./optionsFromStrings.js");
 
 var _optionsFromStrings2 = _interopRequireDefault(_optionsFromStrings);
 
+var _defaults = require("../defaults/defaults.js");
+
+var _defaults2 = _interopRequireDefault(_defaults);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function getOptionsFromElement(element, defaults) {
-  var options = {};
-  for (var property in defaults) {
-    // jsbarcode-*
-    if (element.hasAttribute("jsbarcode-" + property.toLowerCase())) {
-      options[property] = element.getAttribute("jsbarcode-" + property.toLowerCase());
-    }
+function getOptionsFromElement(element) {
+	var options = {};
+	for (var property in _defaults2.default) {
+		if (_defaults2.default.hasOwnProperty(property)) {
+			// jsbarcode-*
+			if (element.hasAttribute("jsbarcode-" + property.toLowerCase())) {
+				options[property] = element.getAttribute("jsbarcode-" + property.toLowerCase());
+			}
 
-    // data-*
-    if (element.hasAttribute("data-" + property.toLowerCase())) {
-      options[property] = element.getAttribute("data-" + property.toLowerCase());
-    }
-  }
+			// data-*
+			if (element.hasAttribute("data-" + property.toLowerCase())) {
+				options[property] = element.getAttribute("data-" + property.toLowerCase());
+			}
+		}
+	}
 
-  options["value"] = element.getAttribute("jsbarcode-value") || element.getAttribute("data-value");
+	options["value"] = element.getAttribute("jsbarcode-value") || element.getAttribute("data-value");
 
-  // Since all atributes are string they need to be converted to integers
-  options = (0, _optionsFromStrings2.default)(options);
+	// Since all atributes are string they need to be converted to integers
+	options = (0, _optionsFromStrings2.default)(options);
 
-  return options;
+	return options;
 }
 
 exports.default = getOptionsFromElement;
-},{"./optionsFromStrings.js":32}],30:[function(require,module,exports){
+},{"../defaults/defaults.js":28,"./optionsFromStrings.js":34}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
+});
+
+var _getOptionsFromElement = require("./getOptionsFromElement.js");
+
+var _getOptionsFromElement2 = _interopRequireDefault(_getOptionsFromElement);
+
+var _renderers = require("../renderers");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Takes an element and returns an object with information about how
+// it should be rendered
+// This could also return an array with these objects
+// {
+//   element: The element that the renderer should draw on
+//   renderer: The name of the renderer
+//   afterRender (optional): If something has to done after the renderer
+//     completed, calls afterRender (function)
+//   options (optional): Options that can be defined in the element
+// }
+
+/* global HTMLImageElement */
+/* global HTMLCanvasElement */
+/* global SVGElement */
+
+function getRenderProperties(element) {
+	// If the element is a string, query select call again
+	if (typeof element === "string") {
+		return querySelectedRenderProperties(element);
+	}
+	// If element is array. Recursivly call with every object in the array
+	else if (Array.isArray(element)) {
+			var returnArray = [];
+			for (var i = 0; i < element.length; i++) {
+				returnArray.push(getRenderProperties(element[i]));
+			}
+			return returnArray;
+		}
+		// If element, render on canvas and set the uri as src
+		else if (typeof HTMLCanvasElement !== 'undefined' && element instanceof HTMLImageElement) {
+				return newCanvasRenderProperties(element);
+			}
+			// If SVG
+			else if (typeof SVGElement !== 'undefined' && element instanceof SVGElement) {
+					return {
+						element: element,
+						options: (0, _getOptionsFromElement2.default)(element),
+						renderer: (0, _renderers.getRendererClass)("svg")
+					};
+				}
+				// If canvas (in browser)
+				else if (typeof HTMLCanvasElement !== 'undefined' && element instanceof HTMLCanvasElement) {
+						return {
+							element: element,
+							options: (0, _getOptionsFromElement2.default)(element),
+							renderer: (0, _renderers.getRendererClass)("canvas")
+						};
+					}
+					// If canvas (in node)
+					else if (element.getContext) {
+							return {
+								element: element,
+								renderer: (0, _renderers.getRendererClass)("canvas")
+							};
+						} else {
+							throw new Error("Not supported type to render on.");
+						}
+}
+
+function querySelectedRenderProperties(string) {
+	var selector = document.querySelectorAll(string);
+	if (selector.length === 0) {
+		throw new Error("No element found");
+	} else {
+		var returnArray = [];
+		for (var i = 0; i < selector.length; i++) {
+			returnArray.push(getRenderProperties(selector[i]));
+		}
+		return returnArray;
+	}
+}
+
+function newCanvasRenderProperties(imgElement) {
+	var canvas = document.createElement('canvas');
+	return {
+		element: canvas,
+		options: (0, _getOptionsFromElement2.default)(imgElement),
+		renderer: (0, _renderers.getRendererClass)("canvas"),
+		afterRender: function afterRender() {
+			imgElement.setAttribute("src", canvas.toDataURL());
+		}
+	};
+}
+
+exports.default = getRenderProperties;
+},{"../renderers":36,"./getOptionsFromElement.js":30}],32:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
 });
 exports.default = linearizeEncodings;
 
@@ -2067,73 +2110,75 @@ exports.default = linearizeEncodings;
 // Convert to [1-1, 1-2, 2, 3-1, 3-2]
 
 function linearizeEncodings(encodings) {
-  var linearEncodings = [];
-  function nextLevel(encoded) {
-    if (Array.isArray(encoded)) {
-      for (var i = 0; i < encoded.length; i++) {
-        nextLevel(encoded[i]);
-      }
-    } else {
-      encoded.text = encoded.text || "";
-      encoded.data = encoded.data || "";
-      linearEncodings.push(encoded);
-    }
-  }
-  nextLevel(encodings);
+	var linearEncodings = [];
+	function nextLevel(encoded) {
+		if (Array.isArray(encoded)) {
+			for (var i = 0; i < encoded.length; i++) {
+				nextLevel(encoded[i]);
+			}
+		} else {
+			encoded.text = encoded.text || "";
+			encoded.data = encoded.data || "";
+			linearEncodings.push(encoded);
+		}
+	}
+	nextLevel(encodings);
 
-  return linearEncodings;
+	return linearEncodings;
 }
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 exports.default = merge;
 
 
 function merge(old, replaceObj) {
-  var newMerge = {};
-  var k;
-  for (k in old) {
-    if (old.hasOwnProperty(k)) {
-      newMerge[k] = old[k];
-    }
-  }
-  for (k in replaceObj) {
-    if (replaceObj.hasOwnProperty(k) && typeof replaceObj[k] !== "undefined") {
-      newMerge[k] = replaceObj[k];
-    }
-  }
-  return newMerge;
+	var newMerge = {};
+	var k;
+	for (k in old) {
+		if (old.hasOwnProperty(k)) {
+			newMerge[k] = old[k];
+		}
+	}
+	for (k in replaceObj) {
+		if (replaceObj.hasOwnProperty(k) && typeof replaceObj[k] !== "undefined") {
+			newMerge[k] = replaceObj[k];
+		}
+	}
+	return newMerge;
 }
-},{}],32:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 exports.default = optionsFromStrings;
 
 // Convert string to integers/booleans where it should be
 
 function optionsFromStrings(options) {
-  var intOptions = ["width", "height", "textMargin", "fontSize", "margin", "marginTop", "marginBottom", "marginLeft", "marginRight"];
+	var intOptions = ["width", "height", "textMargin", "fontSize", "margin", "marginTop", "marginBottom", "marginLeft", "marginRight"];
 
-  for (var intOption in intOptions) {
-    intOption = intOptions[intOption];
-    if (typeof options[intOption] === "string") {
-      options[intOption] = parseInt(options[intOption], 10);
-    }
-  }
+	for (var intOption in intOptions) {
+		if (intOptions.hasOwnProperty(intOption)) {
+			intOption = intOptions[intOption];
+			if (typeof options[intOption] === "string") {
+				options[intOption] = parseInt(options[intOption], 10);
+			}
+		}
+	}
 
-  if (typeof options["displayValue"] === "string") {
-    options["displayValue"] = options["displayValue"] != "false";
-  }
+	if (typeof options["displayValue"] === "string") {
+		options["displayValue"] = options["displayValue"] != "false";
+	}
 
-  return options;
+	return options;
 }
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2144,168 +2189,151 @@ var _merge = require("../help/merge.js");
 
 var _merge2 = _interopRequireDefault(_merge);
 
+var _shared = require("./shared.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = renderCanvas;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var CanvasRenderer = function () {
+	function CanvasRenderer(canvas, encodings, options) {
+		_classCallCheck(this, CanvasRenderer);
 
-function renderCanvas(canvas, encodings, options) {
-	// Abort if the browser does not support HTML5 canvas
-	if (!canvas.getContext) {
-		throw new Error('The browser does not support canvas.');
+		this.canvas = canvas;
+		this.encodings = encodings;
+		this.options = options;
 	}
 
-	prepareCanvas(canvas, options, encodings);
-	for (var i = 0; i < encodings.length; i++) {
-		var encodingOptions = (0, _merge2.default)(options, encodings[i].options);
-
-		drawCanvasBarcode(canvas, encodingOptions, encodings[i]);
-		drawCanvasText(canvas, encodingOptions, encodings[i]);
-
-		moveCanvasDrawing(canvas, encodings[i]);
-	}
-
-	restoreCanvas(canvas);
-}
-
-function prepareCanvas(canvas, options, encodings) {
-	// Get the canvas context
-	var ctx = canvas.getContext("2d");
-
-	ctx.save();
-
-	// Calculate total width
-	var totalWidth = 0;
-	var maxHeight = 0;
-	for (var i = 0; i < encodings.length; i++) {
-		var _options = (0, _merge2.default)(_options, encodings[i].options);
-
-		// Set font
-		ctx.font = _options.fontOptions + " " + _options.fontSize + "px " + _options.font;
-
-		// Calculate the width of the encoding
-		var textWidth = ctx.measureText(encodings[i].text).width;
-		var barcodeWidth = encodings[i].data.length * _options.width;
-		encodings[i].width = Math.ceil(Math.max(textWidth, barcodeWidth));
-
-		// Calculate the height of the encoding
-		var height = _options.height + (_options.displayValue && encodings[i].text.length > 0 ? _options.fontSize : 0) + _options.textMargin + _options.marginTop + _options.marginBottom;
-
-		var barcodePadding = 0;
-		if (_options.displayValue && barcodeWidth < textWidth) {
-			if (_options.textAlign == "center") {
-				barcodePadding = Math.floor((textWidth - barcodeWidth) / 2);
-			} else if (_options.textAlign == "left") {
-				barcodePadding = 0;
-			} else if (_options.textAlign == "right") {
-				barcodePadding = Math.floor(textWidth - barcodeWidth);
-			}
-		}
-		encodings[i].barcodePadding = barcodePadding;
-
-		if (height > maxHeight) {
-			maxHeight = height;
+	CanvasRenderer.prototype.render = function render() {
+		// Abort if the browser does not support HTML5 canvas
+		if (!this.canvas.getContext) {
+			throw new Error('The browser does not support canvas.');
 		}
 
-		totalWidth += encodings[i].width;
-	}
+		this.prepareCanvas();
+		for (var i = 0; i < this.encodings.length; i++) {
+			var encodingOptions = (0, _merge2.default)(this.options, this.encodings[i].options);
 
-	canvas.width = totalWidth + options.marginLeft + options.marginRight;
+			this.drawCanvasBarcode(encodingOptions, this.encodings[i]);
+			this.drawCanvasText(encodingOptions, this.encodings[i]);
 
-	canvas.height = maxHeight;
-
-	// Paint the canvas
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	if (options.background) {
-		ctx.fillStyle = options.background;
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-	}
-
-	ctx.translate(options.marginLeft, 0);
-}
-
-function drawCanvasBarcode(canvas, options, encoding) {
-	// Get the canvas context
-	var ctx = canvas.getContext("2d");
-
-	var binary = encoding.data;
-
-	// Creates the barcode out of the encoded binary
-	var yFrom, yHeight;
-	if (options.textPosition == "top") {
-		yFrom = options.marginTop + options.fontSize + options.textMargin;
-	} else {
-		yFrom = options.marginTop;
-	}
-	yHeight = options.height;
-
-	ctx.fillStyle = options.lineColor;
-
-	for (var b = 0; b < binary.length; b++) {
-		var x = b * options.width + encoding.barcodePadding;
-
-		if (binary[b] === "1") {
-			ctx.fillRect(x, yFrom, options.width, options.height);
-		} else if (binary[b]) {
-			ctx.fillRect(x, yFrom, options.width, options.height * binary[b]);
+			this.moveCanvasDrawing(this.encodings[i]);
 		}
-	}
-}
 
-function drawCanvasText(canvas, options, encoding) {
-	// Get the canvas context
-	var ctx = canvas.getContext("2d");
+		this.restoreCanvas();
+	};
 
-	var font = options.fontOptions + " " + options.fontSize + "px " + options.font;
+	CanvasRenderer.prototype.prepareCanvas = function prepareCanvas() {
+		// Get the canvas context
+		var ctx = this.canvas.getContext("2d");
 
-	// Draw the text if displayValue is set
-	if (options.displayValue) {
-		var x, y;
+		ctx.save();
 
+		(0, _shared.calculateEncodingAttributes)(this.encodings, this.options, ctx);
+		var totalWidth = (0, _shared.getTotalWidthOfEncodings)(this.encodings);
+		var maxHeight = (0, _shared.getMaximumHeightOfEncodings)(this.encodings);
+
+		this.canvas.width = totalWidth + this.options.marginLeft + this.options.marginRight;
+
+		this.canvas.height = maxHeight;
+
+		// Paint the canvas
+		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		if (this.options.background) {
+			ctx.fillStyle = this.options.background;
+			ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+		}
+
+		ctx.translate(this.options.marginLeft, 0);
+	};
+
+	CanvasRenderer.prototype.drawCanvasBarcode = function drawCanvasBarcode(options, encoding) {
+		// Get the canvas context
+		var ctx = this.canvas.getContext("2d");
+
+		var binary = encoding.data;
+
+		// Creates the barcode out of the encoded binary
+		var yFrom;
 		if (options.textPosition == "top") {
-			y = options.marginTop + options.fontSize - options.textMargin;
+			yFrom = options.marginTop + options.fontSize + options.textMargin;
 		} else {
-			y = options.height + options.textMargin + options.marginTop + options.fontSize;
+			yFrom = options.marginTop;
 		}
 
-		ctx.font = font;
+		ctx.fillStyle = options.lineColor;
 
-		// Draw the text in the correct X depending on the textAlign option
-		if (options.textAlign == "left" || encoding.barcodePadding > 0) {
-			x = 0;
-			ctx.textAlign = 'left';
-		} else if (options.textAlign == "right") {
-			x = encoding.width - 1;
-			ctx.textAlign = 'right';
+		for (var b = 0; b < binary.length; b++) {
+			var x = b * options.width + encoding.barcodePadding;
+
+			if (binary[b] === "1") {
+				ctx.fillRect(x, yFrom, options.width, options.height);
+			} else if (binary[b]) {
+				ctx.fillRect(x, yFrom, options.width, options.height * binary[b]);
+			}
 		}
-		// In all other cases, center the text
-		else {
-				x = encoding.width / 2;
-				ctx.textAlign = 'center';
+	};
+
+	CanvasRenderer.prototype.drawCanvasText = function drawCanvasText(options, encoding) {
+		// Get the canvas context
+		var ctx = this.canvas.getContext("2d");
+
+		var font = options.fontOptions + " " + options.fontSize + "px " + options.font;
+
+		// Draw the text if displayValue is set
+		if (options.displayValue) {
+			var x, y;
+
+			if (options.textPosition == "top") {
+				y = options.marginTop + options.fontSize - options.textMargin;
+			} else {
+				y = options.height + options.textMargin + options.marginTop + options.fontSize;
 			}
 
-		ctx.fillText(encoding.text, x, y);
-	}
-}
+			ctx.font = font;
 
-function moveCanvasDrawing(canvas, encoding) {
-	var ctx = canvas.getContext("2d");
+			// Draw the text in the correct X depending on the textAlign option
+			if (options.textAlign == "left" || encoding.barcodePadding > 0) {
+				x = 0;
+				ctx.textAlign = 'left';
+			} else if (options.textAlign == "right") {
+				x = encoding.width - 1;
+				ctx.textAlign = 'right';
+			}
+			// In all other cases, center the text
+			else {
+					x = encoding.width / 2;
+					ctx.textAlign = 'center';
+				}
 
-	ctx.translate(encoding.width, 0);
-}
+			ctx.fillText(encoding.text, x, y);
+		}
+	};
 
-function restoreCanvas(canvas) {
-	// Get the canvas context
-	var ctx = canvas.getContext("2d");
+	CanvasRenderer.prototype.moveCanvasDrawing = function moveCanvasDrawing(encoding) {
+		var ctx = this.canvas.getContext("2d");
 
-	ctx.restore();
-}
-},{"../help/merge.js":31}],34:[function(require,module,exports){
+		ctx.translate(encoding.width, 0);
+	};
+
+	CanvasRenderer.prototype.restoreCanvas = function restoreCanvas() {
+		// Get the canvas context
+		var ctx = this.canvas.getContext("2d");
+
+		ctx.restore();
+	};
+
+	return CanvasRenderer;
+}();
+
+exports.default = CanvasRenderer;
+},{"../help/merge.js":33,"./shared.js":37}],36:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
+exports.getRendererClass = undefined;
 
 var _canvas = require('./canvas.js');
 
@@ -2317,16 +2345,25 @@ var _svg2 = _interopRequireDefault(_svg);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = {
-  canvas: _canvas2.default,
-  svg: _svg2.default
-};
-},{"./canvas.js":33,"./svg.js":35}],35:[function(require,module,exports){
+function getRendererClass(name) {
+	switch (name) {
+		case "canvas":
+			return _canvas2.default;
+		case "svg":
+			return _svg2.default;
+		default:
+			throw new Error("Invalid rederer");
+	}
+}
+
+exports.getRendererClass = getRendererClass;
+},{"./canvas.js":35,"./svg.js":38}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
+exports.getTotalWidthOfEncodings = exports.calculateEncodingAttributes = exports.getBarcodePadding = exports.getEncodingHeight = exports.getMaximumHeightOfEncodings = undefined;
 
 var _merge = require("../help/merge.js");
 
@@ -2334,207 +2371,255 @@ var _merge2 = _interopRequireDefault(_merge);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = renderSVG;
+function getEncodingHeight(encoding, options) {
+	return options.height + (options.displayValue && encoding.text.length > 0 ? options.fontSize + options.textMargin : 0) + options.marginTop + options.marginBottom;
+}
 
+function getBarcodePadding(textWidth, barcodeWidth, options) {
+	if (options.displayValue && barcodeWidth < textWidth) {
+		if (options.textAlign == "center") {
+			return Math.floor((textWidth - barcodeWidth) / 2);
+		} else if (options.textAlign == "left") {
+			return 0;
+		} else if (options.textAlign == "right") {
+			return Math.floor(textWidth - barcodeWidth);
+		}
+	}
+	return 0;
+}
+
+function calculateEncodingAttributes(encodings, barcodeOptions, context) {
+	for (var i = 0; i < encodings.length; i++) {
+		var encoding = encodings[i];
+		var options = (0, _merge2.default)(barcodeOptions, encoding.options);
+
+		// Calculate the width of the encoding
+		var textWidth = messureText(encoding.text, options, context);
+		var barcodeWidth = encoding.data.length * options.width;
+		encoding.width = Math.ceil(Math.max(textWidth, barcodeWidth));
+
+		encoding.height = getEncodingHeight(encoding, options);
+
+		encoding.barcodePadding = getBarcodePadding(textWidth, barcodeWidth, options);
+	}
+}
+
+function getTotalWidthOfEncodings(encodings) {
+	var totalWidth = 0;
+	for (var i = 0; i < encodings.length; i++) {
+		totalWidth += encodings[i].width;
+	}
+	return totalWidth;
+}
+
+function getMaximumHeightOfEncodings(encodings) {
+	var maxHeight = 0;
+	for (var i = 0; i < encodings.length; i++) {
+		if (encodings[i].height > maxHeight) {
+			maxHeight = encodings[i].height;
+		}
+	}
+	return maxHeight;
+}
+
+function messureText(string, options, context) {
+	var ctx;
+	if (typeof context === "undefined") {
+		ctx = document.createElement("canvas").getContext("2d");
+	} else {
+		ctx = context;
+	}
+
+	ctx.font = options.fontOptions + " " + options.fontSize + "px " + options.font;
+
+	// Calculate the width of the encoding
+	var size = ctx.measureText(string).width;
+
+	return size;
+}
+
+exports.getMaximumHeightOfEncodings = getMaximumHeightOfEncodings;
+exports.getEncodingHeight = getEncodingHeight;
+exports.getBarcodePadding = getBarcodePadding;
+exports.calculateEncodingAttributes = calculateEncodingAttributes;
+exports.getTotalWidthOfEncodings = getTotalWidthOfEncodings;
+},{"../help/merge.js":33}],38:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _merge = require("../help/merge.js");
+
+var _merge2 = _interopRequireDefault(_merge);
+
+var _shared = require("./shared.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var svgns = "http://www.w3.org/2000/svg";
 
-function renderSVG(svg, encodings, options) {
-  var currentX = options.marginLeft;
+var SVGRenderer = function () {
+	function SVGRenderer(svg, encodings, options) {
+		_classCallCheck(this, SVGRenderer);
 
-  prepareSVG(svg, options, encodings);
-  for (var i = 0; i < encodings.length; i++) {
-    var encodingOptions = (0, _merge2.default)(options, encodings[i].options);
+		this.svg = svg;
+		this.encodings = encodings;
+		this.options = options;
+	}
 
-    var group = createGroup(currentX, encodingOptions.marginTop, svg);
+	SVGRenderer.prototype.render = function render() {
+		var currentX = this.options.marginLeft;
 
-    setGroupOptions(group, encodingOptions, encodings[i]);
+		this.prepareSVG();
+		for (var i = 0; i < this.encodings.length; i++) {
+			var encoding = this.encodings[i];
+			var encodingOptions = (0, _merge2.default)(this.options, encoding.options);
 
-    drawSvgBarcode(group, encodingOptions, encodings[i]);
-    drawSVGText(group, encodingOptions, encodings[i]);
+			var group = createGroup(currentX, encodingOptions.marginTop, this.svg);
 
-    currentX += encodings[i].width;
-  }
+			setGroupOptions(group, encodingOptions);
+
+			this.drawSvgBarcode(group, encodingOptions, encoding);
+			this.drawSVGText(group, encodingOptions, encoding);
+
+			currentX += encoding.width;
+		}
+	};
+
+	SVGRenderer.prototype.prepareSVG = function prepareSVG() {
+		// Clear the SVG
+		while (this.svg.firstChild) {
+			this.svg.removeChild(this.firstChild);
+		}
+
+		(0, _shared.calculateEncodingAttributes)(this.encodings, this.options);
+		var totalWidth = (0, _shared.getTotalWidthOfEncodings)(this.encodings);
+		var maxHeight = (0, _shared.getMaximumHeightOfEncodings)(this.encodings);
+
+		var width = totalWidth + this.options.marginLeft + this.options.marginRight;
+		this.setSvgAttributes(width, maxHeight);
+	};
+
+	SVGRenderer.prototype.drawSvgBarcode = function drawSvgBarcode(parent, options, encoding) {
+		var binary = encoding.data;
+
+		// Creates the barcode out of the encoded binary
+		var yFrom;
+		if (options.textPosition == "top") {
+			yFrom = options.fontSize + options.textMargin;
+		} else {
+			yFrom = 0;
+		}
+
+		var barWidth = 0;
+		var x = 0;
+		for (var b = 0; b < binary.length; b++) {
+			x = b * options.width + encoding.barcodePadding;
+
+			if (binary[b] === "1") {
+				barWidth++;
+			} else if (barWidth > 0) {
+				drawLine(x - options.width * barWidth, yFrom, options.width * barWidth, options.height, parent);
+				barWidth = 0;
+			}
+		}
+
+		// Last draw is needed since the barcode ends with 1
+		if (barWidth > 0) {
+			drawLine(x - options.width * (barWidth - 1), yFrom, options.width * barWidth, options.height, parent);
+		}
+	};
+
+	SVGRenderer.prototype.drawSVGText = function drawSVGText(parent, options, encoding) {
+		var textElem = document.createElementNS(svgns, 'text');
+
+		// Draw the text if displayValue is set
+		if (options.displayValue) {
+			var x, y;
+
+			textElem.setAttribute("style", "font:" + options.fontOptions + " " + options.fontSize + "px " + options.font);
+
+			if (options.textPosition == "top") {
+				y = options.fontSize - options.textMargin;
+			} else {
+				y = options.height + options.textMargin + options.fontSize;
+			}
+
+			// Draw the text in the correct X depending on the textAlign option
+			if (options.textAlign == "left" || encoding.barcodePadding > 0) {
+				x = 0;
+				textElem.setAttribute("text-anchor", "start");
+			} else if (options.textAlign == "right") {
+				x = encoding.width - 1;
+				textElem.setAttribute("text-anchor", "end");
+			}
+			// In all other cases, center the text
+			else {
+					x = encoding.width / 2;
+					textElem.setAttribute("text-anchor", "middle");
+				}
+
+			textElem.setAttribute("x", x);
+			textElem.setAttribute("y", y);
+
+			textElem.appendChild(document.createTextNode(encoding.text));
+
+			parent.appendChild(textElem);
+		}
+	};
+
+	SVGRenderer.prototype.setSvgAttributes = function setSvgAttributes(width, height) {
+		var svg = this.svg;
+		svg.setAttribute("width", width + "px");
+		svg.setAttribute("height", height + "px");
+		svg.setAttribute("x", "0px");
+		svg.setAttribute("y", "0px");
+		svg.setAttribute("viewBox", "0 0 " + width + " " + height);
+
+		svg.setAttribute("xmlns", svgns);
+		svg.setAttribute("version", "1.1");
+
+		svg.style.transform = "translate(0,0)";
+
+		if (this.options.background) {
+			svg.style.background = this.options.background;
+		}
+	};
+
+	return SVGRenderer;
+}();
+
+function createGroup(x, y, parent) {
+	var group = document.createElementNS(svgns, 'g');
+
+	group.setAttribute("transform", "translate(" + x + ", " + y + ")");
+
+	parent.appendChild(group);
+
+	return group;
 }
 
-function prepareSVG(svg, options, encodings) {
-  // Clear the SVG
-  while (svg.firstChild) {
-    svg.removeChild(svg.firstChild);
-  }
-
-  var totalWidth = 0;
-  var maxHeight = 0;
-  for (var i = 0; i < encodings.length; i++) {
-    var _options = (0, _merge2.default)(_options, encodings[i].options);
-
-    // Calculate the width of the encoding
-    var textWidth = messureSVGtext(encodings[i].text, svg, _options);
-    var barcodeWidth = encodings[i].data.length * _options.width;
-    encodings[i].width = Math.ceil(Math.max(textWidth, barcodeWidth));
-
-    // Calculate the height of the encoding
-    var encodingHeight = _options.height + (_options.displayValue && encodings[i].text.length > 0 ? _options.fontSize : 0) + _options.textMargin + _options.marginTop + _options.marginBottom;
-
-    var barcodePadding = 0;
-    if (_options.displayValue && barcodeWidth < textWidth) {
-      if (_options.textAlign == "center") {
-        barcodePadding = Math.floor((textWidth - barcodeWidth) / 2);
-      } else if (_options.textAlign == "left") {
-        barcodePadding = 0;
-      } else if (_options.textAlign == "right") {
-        barcodePadding = Math.floor(textWidth - barcodeWidth);
-      }
-    }
-    encodings[i].barcodePadding = barcodePadding;
-
-    if (encodingHeight > maxHeight) {
-      maxHeight = encodingHeight;
-    }
-
-    totalWidth += encodings[i].width;
-  }
-
-  var width = totalWidth + options.marginLeft + options.marginRight;
-  var height = maxHeight;
-
-  svg.setAttribute("width", width + "px");
-  svg.setAttribute("height", height + "px");
-  svg.setAttribute("x", "0px");
-  svg.setAttribute("y", "0px");
-  svg.setAttribute("viewBox", "0 0 " + width + " " + height);
-
-  svg.setAttribute("xmlns", svgns);
-  svg.setAttribute("version", "1.1");
-
-  svg.style.transform = "translate(0,0)";
-
-  if (options.background) {
-    svg.style.background = options.background;
-  }
-}
-
-function drawSvgBarcode(parent, options, encoding) {
-  var binary = encoding.data;
-
-  // Creates the barcode out of the encoded binary
-  var yFrom, yHeight;
-  if (options.textPosition == "top") {
-    yFrom = options.fontSize + options.textMargin;
-  } else {
-    yFrom = 0;
-  }
-  yHeight = options.height;
-
-  var barWidth = 0;
-  for (var b = 0; b < binary.length; b++) {
-    var x = b * options.width + encoding.barcodePadding;
-
-    if (binary[b] === "1") {
-      barWidth++;
-    } else if (barWidth > 0) {
-      drawLine(x - options.width * barWidth, yFrom, options.width * barWidth, options.height, parent);
-      barWidth = 0;
-    }
-  }
-
-  // Last draw is needed since the barcode ends with 1
-  if (barWidth > 0) {
-    drawLine(x - options.width * (barWidth - 1), yFrom, options.width * barWidth, options.height, parent);
-  }
-}
-
-function drawSVGText(parent, options, encoding) {
-  var textElem = document.createElementNS(svgns, 'text');
-
-  // Draw the text if displayValue is set
-  if (options.displayValue) {
-    var x, y;
-
-    textElem.setAttribute("style", "font:" + options.fontOptions + " " + options.fontSize + "px " + options.font);
-
-    if (options.textPosition == "top") {
-      y = options.fontSize - options.textMargin;
-    } else {
-      y = options.height + options.textMargin + options.fontSize;
-    }
-
-    // Draw the text in the correct X depending on the textAlign option
-    if (options.textAlign == "left" || encoding.barcodePadding > 0) {
-      x = 0;
-      textElem.setAttribute("text-anchor", "start");
-    } else if (options.textAlign == "right") {
-      x = encoding.width - 1;
-      textElem.setAttribute("text-anchor", "end");
-    }
-    // In all other cases, center the text
-    else {
-        x = encoding.width / 2;
-        textElem.setAttribute("text-anchor", "middle");
-      }
-
-    textElem.setAttribute("x", x);
-    textElem.setAttribute("y", y);
-
-    textElem.appendChild(document.createTextNode(encoding.text));
-
-    parent.appendChild(textElem);
-  }
-}
-
-//
-// Help functions
-//
-function messureSVGtext(string, svg, options) {
-  // Create text element
-  /* var text = document.createElementNS(svgns, 'text');
-  text.style.fontFamily = options.font;
-    text.setAttribute("style",
-     "font-family:" + options.font + ";" +
-     "font-size:" + options.fontSize + "px;"
-   );
-  	var textNode = document.createTextNode(string);
-  	text.appendChild(textNode);
-    svg.appendChild(text);
-    var size = text.getComputedTextLength();
-    svg.removeChild(text);
-   */
-  // TODO: Use svg to messure the text width
-  // Set font
-  var ctx = document.createElement("canvas").getContext("2d");
-  ctx.font = options.fontOptions + " " + options.fontSize + "px " + options.font;
-
-  // Calculate the width of the encoding
-  var size = ctx.measureText(string).width;
-
-  return size;
-}
-
-function createGroup(x, y, svg) {
-  var group = document.createElementNS(svgns, 'g');
-
-  group.setAttribute("transform", "translate(" + x + ", " + y + ")");
-
-  svg.appendChild(group);
-
-  return group;
-}
-
-function setGroupOptions(group, options, encoding) {
-  group.setAttribute("style", "fill:" + options.lineColor + ";");
+function setGroupOptions(group, options) {
+	group.setAttribute("style", "fill:" + options.lineColor + ";");
 }
 
 function drawLine(x, y, width, height, parent) {
-  var line = document.createElementNS(svgns, 'rect');
+	var line = document.createElementNS(svgns, 'rect');
 
-  line.setAttribute("x", x);
-  line.setAttribute("y", y);
-  line.setAttribute("width", width);
-  line.setAttribute("height", height);
+	line.setAttribute("x", x);
+	line.setAttribute("y", y);
+	line.setAttribute("width", width);
+	line.setAttribute("height", height);
 
-  parent.appendChild(line);
+	parent.appendChild(line);
 }
-},{"../help/merge.js":31}],36:[function(require,module,exports){
+
+exports.default = SVGRenderer;
+},{"../help/merge.js":33,"./shared.js":37}],39:[function(require,module,exports){
 'use strict';
 
 let JsBarcode = require('jsbarcode');
@@ -2649,7 +2734,7 @@ class BarcodeDirective {
 BarcodeDirective.directiveFactory.$inject = [];
 
 module.exports = BarcodeDirective;
-},{"jsbarcode":1}],37:[function(require,module,exports){
+},{"jsbarcode":1}],40:[function(require,module,exports){
 'use strict';
 
 let BarcodeDirective = require('./barcode-directive');
@@ -2661,5 +2746,5 @@ barcode.directive('barcode', BarcodeDirective.directiveFactory);
 
 
 module.exports = barcode;
-},{"./barcode-directive":36}]},{},[37])(37)
+},{"./barcode-directive":39}]},{},[40])(40)
 });
