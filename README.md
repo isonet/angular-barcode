@@ -16,7 +16,7 @@ An angular directive for [Lindell's JsBarcode](https://github.com/lindell/JsBarc
 
 ```import barcode from 'angular-barcode';```
 
-#### Include the script in your code
+#### Or include the script in your code
 
 ```<script src="node_modules/angular-barcode/dist/barcode.es5.js"></script>```
 
