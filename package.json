@@ -10,9 +10,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/isonet/barcode.git"
+    "url": "git+https://github.com/isonet/angular-barcode.git"
   },
   "keywords": [
+    "angular-barcode",
     "barcode",
     "angular",
     "module",
@@ -24,9 +25,9 @@
   "author": "Paul Biester",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/isonet/barcode/issues"
+    "url": "https://github.com/isonet/angular-barcode/issues"
   },
-  "homepage": "https://github.com/isonet/barcode#readme",
+  "homepage": "https://github.com/isonet/angular-barcode#readme",
   "dependencies": {},
   "devDependencies": {
     "angular": "^1.5.7",
