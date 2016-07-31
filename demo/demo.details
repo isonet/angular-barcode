@@ -1,0 +1,12 @@
+JSFiddle Demo
+
+---
+    name: angular-barcode generator
+    description: angular-barcode generator
+    authors:
+        - Paul Biester
+    resources:
+        - /dist/barcode.es5.js
+    normalize_css: no
+...
+

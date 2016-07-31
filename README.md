@@ -39,7 +39,7 @@ Default values:
 
 Do not forget the closing tag `</barcode>` if you intend to generate SVGs.
 
-Take a look at the example/index.html file.
+Take a look at the [JSFiddle](http://jsfiddle.net/gh/get/angular/1.5.7/isonet/angular-barcode/tree/master/demo/) or the example/demo.html file.
 
 For more details you should definitely check out [JSBarcode's Wiki!](https://github.com/lindell/JsBarcode/wiki/Options) 
 
