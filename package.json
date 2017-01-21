@@ -13,6 +13,7 @@
     "url": "git+https://github.com/isonet/angular-barcode.git"
   },
   "keywords": [
+    "angular-barcode",
     "barcode",
     "angular",
     "module",

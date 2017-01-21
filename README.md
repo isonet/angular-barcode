@@ -14,21 +14,27 @@ An angular directive for [Lindell's JsBarcode](https://github.com/lindell/JsBarc
 
 #### Import (if using JSPM)
 
-```import barcode from 'angular-barcode';```
+```javascript
+import barcode from 'angular-barcode';
+```
 
 #### Or include the script in your code
 
-```<script src="node_modules/angular-barcode/dist/barcode.es5.js"></script>```
+```html
+<script src="node_modules/angular-barcode/dist/barcode.es5.js"></script>
+```
 
 #### Add it as a module to angular
 
-```angular.module('MyExampleApp', ['barcode']);```
+```javascript
+angular.module('MyExampleApp', ['barcode']);
+```
 
 ## Usage
 
 Default values:
 
-```javascript
+```html
 <barcode bc-text="Hello World!" bc-type="svg" bc-format="CODE128" bc-line-color="#000000"
          bc-width="2" bc-height="100" bc-display-value="true" bc-font-options=""
          bc-font="monospace" bc-text-align="center" bc-text-position="bottom"
@@ -39,7 +45,7 @@ Default values:
 
 Do not forget the closing tag `</barcode>` if you intend to generate SVGs.
 
-Take a look at the example/index.html file.
+Take a look at the [JSFiddle](http://jsfiddle.net/gh/get/angular/1.5.7/isonet/angular-barcode/tree/master/demo/) or the example/demo.html file.
 
 For more details you should definitely check out [JSBarcode's Wiki!](https://github.com/lindell/JsBarcode/wiki/Options) 
 
