@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/barcodeReader.iml" filepath="$PROJECT_DIR$/.idea/barcodeReader.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../angular-barcode/.idea/angular-barcode.iml" filepath="$PROJECT_DIR$/../angular-barcode/.idea/angular-barcode.iml" />
     </modules>
   </component>
 </project>

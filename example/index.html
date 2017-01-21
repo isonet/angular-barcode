@@ -11,22 +11,22 @@
     <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <script src="../node_modules/angular/angular.js"></script>
-    <script src="../dist/barcode.es5.js"></script>
+    <script src="../dist/angular-barcode.js"></script>
 
     <script>
-        angular.module('barcodeExample', ['barcode'])
+        angular.module('barcodeExample', ['angular-barcode'])
                 .controller('MainController', ['$scope', function ($scope) {
                     $scope.$watch('bc', function () {
                         for (var key in $scope.bc) {
                             if ($scope.bc.hasOwnProperty(key)) {
                                 switch (typeof $scope.bc[key]) {
                                     case 'number':
-                                        if($scope.bc[key] === null) {
+                                        if ($scope.bc[key] === null) {
                                             delete $scope.bc[key];
                                         }
                                         break;
                                     case 'string':
-                                        if($scope.bc[key].length === 0) {
+                                        if ($scope.bc[key].length === 0) {
                                             delete $scope.bc[key];
                                         }
                                         break;
@@ -38,8 +38,6 @@
                     }, true);
 
                     $scope.bc = {
-                        text: "Example",
-
                         format: 'CODE128',
                         lineColor: '#000000',
                         width: 2,
@@ -57,212 +55,191 @@
                         marginBottom: undefined,
                         marginLeft: undefined,
                         marginRight: undefined,
-                        valid: function(valid){}
+                        valid: function (valid) {
+                        }
                     }
                 }
                 ]);
     </script>
 
 </head>
-    <body ng-app="barcodeExample" ng-controller="MainController">
+<body ng-app="barcodeExample" ng-controller="MainController">
 
-    <div class="container">
-        <h1>Barcode generator example</h1>
+<div class="container">
+    <h1>Barcode generator example</h1>
+    <div class="col-xs-5">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label for="text" class="col-sm-4 control-label">Text</label>
+                <div class="col-sm-8">
+                    <input ng-model="txt" type="text" class="form-control" id="text" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="format" class="col-sm-4 control-label">Format</label>
+                <div class="col-sm-8">
+                    <select ng-model="bc.format" class="form-control" id="format">
+                        <optgroup label="CODE128">
+                            <option>CODE128</option>
+                            <option>CODE128A</option>
+                            <option>CODE128B</option>
+                            <option>CODE128C</option>
+                        </optgroup>
 
+                        <optgroup label="EAN / UPC">
+                            <option>UPC</option>
+                            <option>EAN</option>
+                            <option>EAN8</option>
+                            <option>EAN5</option>
+                            <option>EAN2</option>
+                        </optgroup>
 
+                        <optgroup label="CODE39">
+                            <option>CODE39</option>
+                        </optgroup>
 
-        <div class="col-xs-5">
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label for="text" class="col-sm-4 control-label">Text</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.text" type="text" class="form-control" id="text" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="format" class="col-sm-4 control-label">Format</label>
-                    <div class="col-sm-8">
-                        <select ng-model="bc.format" class="form-control" id="format">
-                            <optgroup label="CODE128">
-                                <option>CODE128</option>
-                                <option>CODE128A</option>
-                                <option>CODE128B</option>
-                                <option>CODE128C</option>
-                            </optgroup>
+                        <optgroup label="ITF">
+                            <option>ITF14</option>
+                        </optgroup>
 
-                            <optgroup label="EAN / UPC">
-                                <option>UPC</option>
-                                <option>EAN</option>
-                                <option>EAN8</option>
-                                <option>EAN5</option>
-                                <option>EAN2</option>
-                            </optgroup>
+                        <optgroup label="MSI">
+                            <option>MSI</option>
+                            <option>MSI10</option>
+                            <option>MSI11</option>
+                            <option>MSI1010</option>
+                            <option>MSI1110</option>
+                        </optgroup>
 
-                            <optgroup label="CODE39">
-                                <option>CODE39</option>
-                            </optgroup>
+                        <optgroup label="Pharmacode">
+                            <option>pharmacode</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="lineColor" class="col-sm-4 control-label">Line Color</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.lineColor" type="text" class="form-control" id="lineColor" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="width" class="col-sm-4 control-label">Width</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.width" type="number" class="form-control" id="width" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="height" class="col-sm-4 control-label">Height</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.height" type="number" class="form-control" id="height" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="displayValue" class="col-sm-4 control-label">Display Value</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.displayValue" type="checkbox" class="form-control" id="displayValue" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="fontOptions" class="col-sm-4 control-label">Font Options</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.fontOptions" type="text" class="form-control" id="fontOptions" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="font" class="col-sm-4 control-label">Font</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.font" type="text" class="form-control" id="font" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="textAlign" class="col-sm-4 control-label">Text Align</label>
+                <div class="col-sm-8">
+                    <select ng-model="bc.textAlign" class="form-control" id="textAlign">
+                        <option>left</option>
+                        <option>center</option>
+                        <option>right</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="textPosition" class="col-sm-4 control-label">Text Position</label>
+                <div class="col-sm-8">
+                    <select ng-model="bc.textPosition" class="form-control" id="textPosition">
+                        <option>top</option>
+                        <option>bottom</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="textMargin" class="col-sm-4 control-label">Text Margin</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.textMargin" type="number" class="form-control" id="textMargin" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="fontSize" class="col-sm-4 control-label">Font Size</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.fontSize" type="number" class="form-control" id="fontSize" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="background" class="col-sm-4 control-label">Background</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.background" type="text" class="form-control" id="background" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="margin" class="col-sm-4 control-label">Margin</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.margin" type="number" class="form-control" id="margin" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="marginTop" class="col-sm-4 control-label">Margin Top</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.marginTop" type="number" class="form-control" id="marginTop" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="marginBottom" class="col-sm-4 control-label">Margin Bottom</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.marginBottom" type="number" class="form-control" id="marginBottom" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="marginLeft" class="col-sm-4 control-label">Margin Left</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.marginLeft" type="number" class="form-control" id="marginLeft" placeholder="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="marginRight" class="col-sm-4 control-label">Margin Right</label>
+                <div class="col-sm-8">
+                    <input ng-model="bc.marginRight" type="number" class="form-control" id="marginRight" placeholder="">
+                </div>
+            </div>
+            <!-- TODO add valid function code-->
 
-                            <optgroup label="ITF">
-                                <option>ITF14</option>
-                            </optgroup>
-
-                            <optgroup label="MSI">
-                                <option>MSI</option>
-                                <option>MSI10</option>
-                                <option>MSI11</option>
-                                <option>MSI1010</option>
-                                <option>MSI1110</option>
-                            </optgroup>
-
-                            <optgroup label="Pharmacode">
-                                <option>pharmacode</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="lineColor" class="col-sm-4 control-label">Line Color</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.lineColor" type="text" class="form-control" id="lineColor" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="width" class="col-sm-4 control-label">Width</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.width" type="number" class="form-control" id="width" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="height" class="col-sm-4 control-label">Height</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.height" type="number" class="form-control" id="height" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="displayValue" class="col-sm-4 control-label">Display Value</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.displayValue" type="checkbox" class="form-control" id="displayValue" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="fontOptions" class="col-sm-4 control-label">Font Options</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.fontOptions" type="text" class="form-control" id="fontOptions" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="font" class="col-sm-4 control-label">Font</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.font" type="text" class="form-control" id="font" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="textAlign" class="col-sm-4 control-label">Text Align</label>
-                    <div class="col-sm-8">
-                        <select ng-model="bc.textAlign" class="form-control" id="textAlign">
-                            <option>left</option>
-                            <option>center</option>
-                            <option>right</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="textPosition" class="col-sm-4 control-label">Text Position</label>
-                    <div class="col-sm-8">
-                        <select ng-model="bc.textPosition" class="form-control" id="textPosition">
-                            <option>top</option>
-                            <option>bottom</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="textMargin" class="col-sm-4 control-label">Text Margin</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.textMargin" type="number" class="form-control" id="textMargin" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="fontSize" class="col-sm-4 control-label">Font Size</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.fontSize" type="number" class="form-control" id="fontSize" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="background" class="col-sm-4 control-label">Background</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.background" type="text" class="form-control" id="background" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="margin" class="col-sm-4 control-label">Margin</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.margin" type="number" class="form-control" id="margin" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="marginTop" class="col-sm-4 control-label">Margin Top</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.marginTop" type="number" class="form-control" id="marginTop" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="marginBottom" class="col-sm-4 control-label">Margin Bottom</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.marginBottom" type="number" class="form-control" id="marginBottom" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="marginLeft" class="col-sm-4 control-label">Margin Left</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.marginLeft" type="number" class="form-control" id="marginLeft" placeholder="">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="marginRight" class="col-sm-4 control-label">Margin Right</label>
-                    <div class="col-sm-8">
-                        <input ng-model="bc.marginRight" type="number" class="form-control" id="marginRight" placeholder="">
-                    </div>
-                </div>
-                <!-- TODO add valid function code-->
-
-            </form>
+        </form>
+    </div>
+    <div class="col-xs-7">
+        <div class="row">
+            <angular-barcode ng-model="txt" bc-options="bc" bc-class="barcode" bc-type="svg"></angular-barcode>
         </div>
-        <div class="col-xs-7">
-            <div class="row">
-                <barcode bc-text="{{bc.text}}" bc-type="svg" bc-format="{{bc.format}}" bc-line-color="{{bc.lineColor}}"
-                         bc-width="{{bc.width}}" bc-height="{{bc.height}}" bc-display-value="{{bc.displayValue}}"
-                         bc-font-options="{{bc.fontOptions}}" bc-font="{{bc.font}}" bc-text-align="{{bc.textAlign}}"
-                         bc-text-position="{{bc.textPosition}}" bc-text-margin="{{bc.textMargin}}" bc-font-size="{{bc.fontSize}}"
-                         bc-background="{{bc.background}}" bc-margin="{{bc.margin}}" bc-marginTop="{{bc.marginTop}}"
-                         bc-marginBottom="{{bc.marginBottom}}" bc-marginLeft="{{bc.marginLeft}}" bc-marginRight="{{bc.marginRight}}">
-                </barcode>
-            </div>
-            <div class="row">
-                <barcode bc-text="{{bc.text}}" bc-type="img" bc-format="{{bc.format}}" bc-line-color="{{bc.lineColor}}"
-                         bc-width="{{bc.width}}" bc-height="{{bc.height}}" bc-display-value="{{bc.displayValue}}"
-                         bc-font-options="{{bc.fontOptions}}" bc-font="{{bc.font}}" bc-text-align="{{bc.textAlign}}"
-                         bc-text-position="{{bc.textPosition}}" bc-text-margin="{{bc.textMargin}}" bc-font-size="{{bc.fontSize}}"
-                         bc-background="{{bc.background}}" bc-margin="{{bc.margin}}" bc-marginTop="{{bc.marginTop}}"
-                         bc-marginBottom="{{bc.marginBottom}}" bc-marginLeft="{{bc.marginLeft}}" bc-marginRight="{{bc.marginRight}}">
-                </barcode>
-            </div>
-            <div class="row">
-                <barcode bc-text="{{bc.text}}" bc-type="canvas" bc-format="{{bc.format}}" bc-line-color="{{bc.lineColor}}"
-                         bc-width="{{bc.width}}" bc-height="{{bc.height}}" bc-display-value="{{bc.displayValue}}"
-                         bc-font-options="{{bc.fontOptions}}" bc-font="{{bc.font}}" bc-text-align="{{bc.textAlign}}"
-                         bc-text-position="{{bc.textPosition}}" bc-text-margin="{{bc.textMargin}}" bc-font-size="{{bc.fontSize}}"
-                         bc-background="{{bc.background}}" bc-margin="{{bc.margin}}" bc-marginTop="{{bc.marginTop}}"
-                         bc-marginBottom="{{bc.marginBottom}}" bc-marginLeft="{{bc.marginLeft}}" bc-marginRight="{{bc.marginRight}}">
-                </barcode>
-            </div>
-            <div class="row">
-                <code>{{bc | json }}</code>
-            </div>
+        <div class="row">
+            <angular-barcode ng-model="txt" bc-options="bc" bc-class="barcode" bc-type="img"></angular-barcode>
+        </div>
+        <div class="row">
+            <angular-barcode ng-model="txt" bc-options="bc" bc-class="barcode" bc-type="canvas"></angular-barcode>
+        </div>
+        <div class="row">
+            {{txt}}
+            <code>{{bc | json }}</code>
         </div>
     </div>
+</div>
 
 
-
-
-    </body>
+</body>
 </html>
