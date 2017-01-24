@@ -1,5 +1,7 @@
 # angular-barcode
 
+[NPM registry](https://www.npmjs.com/package/angular-barcode)
+
 An angular directive for [Lindell's JsBarcode](https://github.com/lindell/JsBarcode)
 
 ## Installation
@@ -8,26 +10,22 @@ An angular directive for [Lindell's JsBarcode](https://github.com/lindell/JsBarc
 
 ```npm install --save angular-barcode```
 
-#### Install with JSPM
-
-```jspm install npm:angular-barcode```
-
-#### Import (if using JSPM)
+#### Import
 
 ```javascript
-import barcode from 'angular-barcode';
+import 'angular-barcode';
 ```
 
 #### Or include the script in your code
 
 ```html
-<script src="node_modules/angular-barcode/dist/barcode.es5.js"></script>
+<script src="node_modules/angular-barcode/dist/angular-barcode.js"></script>
 ```
 
 #### Add it as a module to angular
 
 ```javascript
-angular.module('MyExampleApp', ['barcode']);
+angular.module('MyExampleApp', ['angular-barcode']);
 ```
 
 ## Usage
@@ -35,15 +33,45 @@ angular.module('MyExampleApp', ['barcode']);
 Default values:
 
 ```html
-<barcode bc-text="Hello World!" bc-type="svg" bc-format="CODE128" bc-line-color="#000000"
-         bc-width="2" bc-height="100" bc-display-value="true" bc-font-options=""
-         bc-font="monospace" bc-text-align="center" bc-text-position="bottom"
-         bc-text-margin="2" bc-font-size="20" bc-background="#ffffff" bc-margin="0" bc-marginTop="undefined"
-         bc-marginBottom="undefined" bc-marginLeft="undefined" bc-marginRight="undefined">
-</barcode>
+<angular-barcode ng-model="txt" bc-options="bc" bc-class="barcode" bc-type="svg"></angular-barcode>
 ```
 
-Do not forget the closing tag `</barcode>` if you intend to generate SVGs.
+or
+
+```html
+<angular-barcode ng-model="txt" bc-options="bc" bc-class="barcode" bc-type="img"></angular-barcode>
+```
+
+or
+
+```html
+<angular-barcode ng-model="txt" bc-options="bc" bc-class="barcode" bc-type="canvas"></angular-barcode>
+```
+with $scope.bc: 
+```javascript
+$scope.bc = {
+    format: 'CODE128',
+    lineColor: '#000000',
+    width: 2,
+    height: 100,
+    displayValue: true,
+    fontOptions: '',
+    font: 'monospace',
+    textAlign: 'center',
+    textPosition: 'bottom',
+    textMargin: 2,
+    fontSize: 20,
+    background: '#ffffff',
+    margin: 0,
+    marginTop: undefined,
+    marginBottom: undefined,
+    marginLeft: undefined,
+    marginRight: undefined,
+    valid: function (valid) {
+    }
+}
+```
+
 
 -Take a look at the example/index.html file.
 
@@ -51,8 +79,4 @@ For more details you should definitely check out [JSBarcode's Wiki!](https://git
 
 # Dev / Other
 
-This package is written in ES2015 and uses browserify and babelify.
-
-For versions older than 1.2.5:
-
-You will need to setup the canvas package manually: https://www.npmjs.com/package/canvas
+This package is written in ES2015 and uses webpack for bundling.
