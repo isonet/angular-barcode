@@ -1,5 +1,7 @@
 # angular-barcode
 
+### Check out the [demo](https://isonet.github.io/angular-barcode/)!
+
 [NPM registry](https://www.npmjs.com/package/angular-barcode)
 
 An angular directive for [Lindell's JsBarcode](https://github.com/lindell/JsBarcode)
