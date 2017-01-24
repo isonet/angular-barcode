@@ -8,10 +8,10 @@
     <title>Barcode generator example</title>
 
     <!-- Bootstrap -->
-    <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <script src="../node_modules/angular/angular.js"></script>
-    <script src="../dist/angular-barcode.js"></script>
+    <script src="node_modules/angular/angular.js"></script>
+    <script src="node_modules/angular-barcode/dist/angular-barcode.js"></script>
 
     <script>
         angular.module('barcodeExample', ['angular-barcode'])
@@ -57,7 +57,8 @@
                         marginRight: undefined,
                         valid: function (valid) {
                         }
-                    }
+                    };
+                    $scope.txt = 'example';
                 }
                 ]);
     </script>
