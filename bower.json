@@ -1,0 +1,28 @@
+{
+  "name": "angular-barcode-es6",
+  "description": "An angular directive for lindell's JsBarcode",
+  "main": "dist/angular-barcode.js",
+  "authors": [
+    "Paul Biester"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "angular-barcode",
+    "barcode",
+    "angular",
+    "module",
+    "directive",
+    "generator",
+    "lindell",
+    "JsBarcode"
+  ],
+  "homepage": "https://github.com/isonet/angular-barcode",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "bower",
+    "test",
+    "tests"
+  ]
+}
