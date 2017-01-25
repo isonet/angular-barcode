@@ -27,7 +27,7 @@ import 'angular-barcode';
 #### Add it as a module to angular
 
 ```javascript
-angular.module('MyExampleApp', ['angular-barcode']);
+angular.module('MyExampleApp', ['barcode']);
 ```
 
 ## Usage
