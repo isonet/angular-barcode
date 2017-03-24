@@ -18,7 +18,7 @@
   ],
   "homepage": "https://github.com/isonet/angular-barcode",
   "ignore": [
-    "**/.*",
+    "src/**/.*",
     "node_modules",
     "bower_components",
     "bower",
