@@ -1,4 +1,4 @@
-# angular-barcode [![Dependency Status](https://dependencyci.com/github/isonet/angular-barcode/badge)](https://dependencyci.com/github/isonet/angular-barcode)[![npm version](https://badge.fury.io/js/angular-barcode.svg)](https://badge.fury.io/js/angular-barcode)[![licence](https://img.shields.io/npm/l/angular-barcode.svg)](https://img.shields.io/npm/l/angular-barcode.svg)
+# angular-barcode [![npm](https://img.shields.io/npm/v/angular-barcode.svg?style=flat-square)](https://github.com/isonet/angular-barcode)[![licence](https://img.shields.io/npm/l/angular-barcode.svg?style=flat-square)](https://img.shields.io/npm/l/angular-barcode.svg)
 
 ### Check out the [demo](https://isonet.github.io/angular-barcode/)!
 
