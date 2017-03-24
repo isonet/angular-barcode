@@ -39,7 +39,8 @@ module.exports = function (config) {
         },
 
         webpackServer: {
-            noInfo: true // prevent console spamming when running in Karma!
+            // prevent console spamming when running in Karma!
+            noInfo: true
         },
 
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
