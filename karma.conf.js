@@ -14,12 +14,12 @@ module.exports = function (config) {
         exclude: [],
 
         plugins: [
-            require("karma-chai"),
-            require("karma-chrome-launcher"),
-            require("karma-mocha"),
-            require("karma-mocha-reporter"),
-            require("karma-sourcemap-loader"),
-            require("karma-webpack")
+            require('karma-chai'),
+            require('karma-chrome-launcher'),
+            require('karma-mocha'),
+            require('karma-mocha-reporter'),
+            require('karma-sourcemap-loader'),
+            require('karma-webpack')
         ],
 
         // preprocess matching files before serving them to the browser
