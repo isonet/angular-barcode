@@ -1,4 +1,4 @@
-# angular-barcode [![npm](https://img.shields.io/npm/v/angular-barcode.svg?style=flat-square)](https://github.com/isonet/angular-barcode)[![licence](https://img.shields.io/npm/l/angular-barcode.svg?style=flat-square)](https://img.shields.io/npm/l/angular-barcode.svg)
+# angular-barcode [![npm](https://img.shields.io/npm/v/angular-barcode.svg?style=flat-square)](https://github.com/isonet/angular-barcode)[![licence](https://img.shields.io/npm/l/angular-barcode.svg?style=flat-square)](https://img.shields.io/npm/l/angular-barcode.svg)[![Codacy grade](https://img.shields.io/codacy/grade/4c7c16301669444392422c760b6cc802.svg?style=flat-square)](https://github.com/isonet/angular-barcode)
 
 ### Check out the [demo](https://isonet.github.io/angular-barcode/)!
 
