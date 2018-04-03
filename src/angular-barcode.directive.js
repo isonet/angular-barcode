@@ -71,7 +71,7 @@ export default () => {
                 const newElement = angular.element(getTemplate());
                 const text = ngModel.$viewValue || '';
                 const bc = jsbarcode(newElement[0], text, options);
-                angular.forEach(element.children(), (c) => c.remove());
+                angular.forEach(element.children(), (c) => angular.element(c).remove());
                 element.append(newElement);
                 return bc;
             };
